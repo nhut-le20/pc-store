@@ -1,0 +1,174 @@
+<?php
+session_start();
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use App\Controllers\ProductController;
+use App\Controllers\UserController;
+use App\Controllers\PageController;
+
+// Lấy action
+$action = $_GET['action'] ?? 'index';
+
+//  DANH SÁCH PUBLIC
+$public_actions = [
+    'index',
+    'login',
+    'do_login',
+    'register',
+    'do_register',
+    'contact',
+    'submit_contact'
+];
+
+    // 🛑 GATEKEEPER 
+    if (!in_array($action, $public_actions) && !isset($_SESSION['user'])) {
+    header("Location: index.php?action=login");
+    exit();
+}
+
+    // PHÂN LOẠI CONTROLLER
+    if (in_array($action, ['login','register','do_login','do_register','logout'])) {
+        $controller = new UserController();
+
+    } elseif (in_array($action, ['contact','submit_contact'])) {
+        $controller = new PageController();
+
+    } else {
+        $controller = new ProductController();
+    }
+
+    // 🔒 CHẶN QUYỀN ADMIN
+    $admin_actions = ['add','edit','update','delete','admin','orders','orderdetail','updateOrderStatus','exportOrdersCSV'];
+
+    if (isset($_SESSION['role']) && $_SESSION['role'] != 'admin' && in_array($action, $admin_actions)) {
+        die("❌ Bạn không có quyền truy cập!");
+    }
+
+//  ROUTER
+switch ($action) {
+
+    // ===== USER =====
+    case 'login':
+        $controller->showLogin();
+        break;
+
+    case 'do_login':
+        $controller->login();
+        break;
+
+    case 'register':
+        $controller->showRegister();
+        break;
+
+    case 'do_register':
+        $controller->register();
+        break;
+
+    case 'logout':
+        $controller->logout();
+        break;
+
+    // ===== PRODUCT =====
+    case 'add':
+        $controller = new ProductController();
+        $controller->add();
+        break;
+
+    case 'edit':
+        $controller->edit();
+        break;
+
+    case 'update':
+        $controller->update();
+        break;
+
+    case 'delete':
+        $controller->delete();
+        break;
+
+    case 'dashboard':
+        $controller->dashboard();
+        break;
+
+    // ===== CONTACT =====
+    case 'contact':
+        $controller->contact();
+        break;
+
+    case 'submit_contact':
+        $controller->submit();
+        break;
+
+    // ===== CHI TIẾT
+    case 'show':
+        $controller->show();
+        break;
+
+    // ===== GIỎ HÀNG
+    case 'add_cart':
+        $controller->addCart();
+        break;
+
+    case 'cart':
+        $controller->cart();
+        break;
+
+    case 'checkout':
+        $controller->checkout();
+        break;
+
+    case 'process_checkout':
+        $controller->processCheckout();
+        break;
+
+    case 'remove_cart':
+        $controller->removeCart();
+        break;
+
+    // ===== HOME =====
+    case 'index':
+    default:
+        $controller->index();
+        break;
+
+    case 'admin':
+    $controller = new ProductController();
+    $controller->admin();
+    break;
+
+    case 'orders':
+    $controller->orders();
+    break;
+
+    case 'order_detail':
+    $controller->orderDetail();
+    break;
+
+    case 'update_order_status':
+    $controller->updateOrderStatus();
+    break;
+
+    case 'change_password':
+    $controller = new UserController();
+    $controller->changePassword();
+    break;
+
+    case 'do_change_password':
+    $controller = new UserController();
+    $controller->doChangePassword();
+    break;
+
+    case 'export_orders':
+    $controller = new ProductController();
+    $controller->exportOrdersCSV();
+    break;
+
+    case 'update_qty':
+    $controller->updateQty();
+    break;
+
+    case 'update_qty_ajax':
+    $controller->updateQtyAjax();
+    break;
+}
