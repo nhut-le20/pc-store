@@ -1,6 +1,7 @@
-<?php use App\Core\FlashMessage; ?>
+<?php session_start();
+use App\Core\FlashMessage; ?>
 <!DOCTYPE html>
-<html>
+<html> 
 <head>
     <meta charset="UTF-8">
     <title>Đổi mật khẩu</title>

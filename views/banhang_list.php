@@ -115,16 +115,16 @@ body { background:#f1f5f9; font-family:Arial; }
 
 <?php if (isset($_SESSION['user'])): ?>
 
-    <span style="color:white;">
-        <?= $_SESSION['user'] ?>
-    </span>
+<a href="index.php?action=profile" style="color:white; text-decoration:none;">
+    👤 <?= $_SESSION['user'] ?>
+</a>
 
     <?php if ($_SESSION['role'] === 'admin'): ?>
 
         <a href="index.php?action=add" class="btn btn-success btn-sm">+ Thêm SP</a>
         <a href="index.php?action=admin" class="btn btn-warning btn-sm">Dashboard</a>
         <a href="index.php?action=orders" class="btn btn-info btn-sm">Đơn hàng</a>
-
+<a href="index.php?action=users" class="btn btn-primary btn-sm">👤 Users</a>
     <?php else: ?>
 
         <a href="index.php?action=cart" class="btn btn-light btn-sm">🛒</a>

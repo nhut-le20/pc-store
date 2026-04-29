@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 
@@ -18,7 +19,9 @@ $public_actions = [
     'register',
     'do_register',
     'contact',
-    'submit_contact'
+    'submit_contact',
+    'forgot',  
+    'do_forgot'
 ];
 
     // 🛑 GATEKEEPER 
@@ -39,7 +42,12 @@ $public_actions = [
     }
 
     // 🔒 CHẶN QUYỀN ADMIN
-    $admin_actions = ['add','edit','update','delete','admin','orders','orderdetail','updateOrderStatus','exportOrdersCSV'];
+    $admin_actions = ['add','edit','update','delete','admin','orders','orderdetail','updateOrderStatus','exportOrdersCSV', 'users',
+    'add_user',
+    'edit_user',
+    'update_user',
+    'delete_user',
+    'toggle_user'];
 
     if (isset($_SESSION['role']) && $_SESSION['role'] != 'admin' && in_array($action, $admin_actions)) {
         die("❌ Bạn không có quyền truy cập!");
@@ -170,5 +178,53 @@ switch ($action) {
 
     case 'update_qty_ajax':
     $controller->updateQtyAjax();
+    break;
+    case 'forgot':
+    (new App\Controllers\UserController())->showForgot();
+    break;
+
+case 'do_forgot':
+    (new App\Controllers\UserController())->forgot();
+    break;
+
+case 'change_password':
+    (new App\Controllers\UserController())->changePassword();
+    break;
+
+case 'do_change_password':
+    (new App\Controllers\UserController())->doChangePassword();
+    break;
+    case 'profile':
+    (new App\Controllers\UserController())->profile();
+    break;
+
+case 'update_profile':
+    (new App\Controllers\UserController())->updateProfile();
+    break;
+    case 'users':
+    (new App\Controllers\UserController())->listUsers();
+    break;
+
+case 'add_user':
+    (new App\Controllers\UserController())->addUser();
+    break;
+
+case 'edit_user':
+    (new App\Controllers\UserController())->editUser();
+    break;
+
+case 'update_user':
+    (new App\Controllers\UserController())->updateUser();
+    break;
+
+case 'delete_user':
+    (new App\Controllers\UserController())->deleteUser();
+    break;
+
+case 'toggle_user':
+    (new App\Controllers\UserController())->toggleUser();
+    break;
+    case 'save_user':
+    (new App\Controllers\UserController())->saveUser();
     break;
 }

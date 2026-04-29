@@ -78,16 +78,103 @@
         .table img {
             border-radius: 6px;
         }
+        <style>
+/* ===== SIDEBAR ===== */
+.sidebar {
+    width: 240px;
+    height: 100vh;
+    background: #111827;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding-top: 20px;
+}
+
+.sidebar h4 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sidebar a {
+    display: block;
+    color: #9ca3af;
+    padding: 12px 20px;
+    text-decoration: none;
+    transition: 0.3s;
+    border-radius: 8px;
+    margin: 5px 10px;
+}
+
+.sidebar a:hover {
+    background: #2563eb;
+    color: white;
+}
+
+.sidebar a.active {
+    background: #2563eb;
+    color: white;
+}
+
+/* ===== CONTENT ===== */
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+}
+
+/* ===== CARD DASHBOARD ===== */
+.card-box {
+    border-radius: 15px;
+    color: white;
+    padding: 20px;
+    transition: 0.3s;
+}
+
+.card-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.bg-blue { background: #3b82f6; }
+.bg-green { background: #10b981; }
+.bg-orange { background: #f59e0b; }
+.bg-red { background: #ef4444; }
+
+/* ===== TABLE ===== */
+.table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table th {
+    background: #2563eb;
+    color: white;
+}
+
+/* ===== BUTTON ===== */
+.btn {
+    border-radius: 8px;
+}
+
+/* ===== HEADER ===== */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.topbar .user {
+    font-weight: bold;
+}
     </style>
 </head>
-
-<body>
 
 
 <!-- SIDEBAR -->
     <div class="sidebar">
         <h4>👑 PC ADMIN</h4>
-
+         <a href="index.php?action=users">👤 Người dùng</a>
         <a href="index.php?action=admin"><i class="fa fa-chart-line"></i> Dashboard</a>
         <a href="index.php?action=admin"><i class="fa fa-box"></i> Sản phẩm</a>
         <a href="index.php?action=add"><i class="fa fa-plus"></i> Thêm sản phẩm</a>

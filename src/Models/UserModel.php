@@ -91,4 +91,39 @@ class UserModel {
 
         return $stmt->execute([$hash, $id]);
     }
+    public function updateProfile($id, $name, $phone, $address, $avatar) {
+
+    if ($avatar) {
+        $sql = "UPDATE users 
+                SET name=?, phone=?, address=?, avatar=? 
+                WHERE id=?";
+        return $this->conn->prepare($sql)->execute([$name,$phone,$address,$avatar,$id]);
+    } else {
+        $sql = "UPDATE users 
+                SET name=?, phone=?, address=? 
+                WHERE id=?";
+        return $this->conn->prepare($sql)->execute([$name,$phone,$address,$id]);
+    }
+}
+public function getAllUsers() {
+    return $this->conn->query("SELECT * FROM users ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function updateUser($id, $name, $role) {
+    $sql = "UPDATE users SET name=?, role=? WHERE id=?";
+    return $this->conn->prepare($sql)->execute([$name, $role, $id]);
+}
+
+public function deleteUser($id) {
+    return $this->conn->prepare("DELETE FROM users WHERE id=?")->execute([$id]);
+}
+
+public function toggleStatus($id) {
+    $user = $this->findUserById($id);
+
+    $new = ($user['status'] == 'active') ? 'locked' : 'active';
+
+    return $this->conn->prepare("UPDATE users SET status=? WHERE id=?")
+        ->execute([$new, $id]);
+}
 }
