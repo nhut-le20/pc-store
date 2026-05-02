@@ -4,12 +4,15 @@ namespace App\Controllers;
 use App\Models\UserModel;
 use App\Core\Mailer;
 use App\Core\FlashMessage;
+
 class UserController {
     private $model;
 
     public function __construct() {
         $this->model = new UserModel();
     }
+
+    // ================= LOGIN / REGISTER =================
 
     public function showLogin() {
         require_once __DIR__ . '/../../views/dangnhap.php';
@@ -19,118 +22,66 @@ class UserController {
         require_once __DIR__ . '/../../views/dangky.php';
     }
 
-
-public function register() {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    public function register() {
 
         $username = $_POST['username'] ?? '';
         $password = $_POST['password'] ?? '';
         $email    = $_POST['email'] ?? '';
 
-        // 🟢 VALIDATE CƠ BẢN
-        if (empty($username) || empty($password) || empty($email)) {
-            FlashMessage::set('msg', 'Vui lòng nhập đầy đủ thông tin!', 'error');
+        if (!$username || !$password || !$email) {
+            FlashMessage::set('msg', 'Nhập đầy đủ thông tin', 'error');
             header("Location: index.php?action=register");
             exit();
         }
 
-        // 🟢 GỌI MODEL
         $result = $this->model->register($username, $password, $email);
 
-        // 🧨 NẾU TRÙNG USERNAME
         if ($result === "exists") {
             FlashMessage::set('msg', 'Username đã tồn tại!', 'error');
             header("Location: index.php?action=register");
             exit();
         }
 
-        // 🟢 GỬI MAIL (có try để tránh crash)
-        try {
-            Mailer::send(
-                $email,
-                "Chào mừng bạn đến PC STORE",
-                "Đăng ký thành công",
-                "<h2>Xin chào $username</h2>
-                 <p>Bạn đã đăng ký thành công tài khoản tại <b>PC STORE</b></p>"
-            );
-        } catch (\Exception $e) {
-            // Không cho crash web nếu lỗi mail
-        }
-
-        // 🟢 THÔNG BÁO THÀNH CÔNG
-        FlashMessage::set('msg', 'Đăng ký thành công! Vui lòng đăng nhập.', 'success');
-
+        FlashMessage::set('msg', 'Đăng ký thành công!', 'success');
         header("Location: index.php?action=login");
-        exit();
     }
-}
 
-   public function login() {
-
-    // if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-    //     $username = $_POST['username'] ?? '';
-    //     $password = $_POST['password'] ?? '';
-
-    //     $user = $this->model->getUserByUsername($username);
-
-    //     if ($user && password_verify($password, $user['password'])) {
-
-    //         $_SESSION['user'] = $user['username'];
-    //         $_SESSION['user_id'] = $user['id'];
-    //         $_SESSION['role'] = $user['role'];
-
-    //         header("Location: index.php");
-    //         exit();
-
-    //     } else {
-
-    //         \App\Core\FlashMessage::set('msg', 'Sai tài khoản hoặc mật khẩu', 'error');
-    //         header("Location: index.php?action=login");
-    //         exit();
-    //     }
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    public function login() {
 
         $username = $_POST['username'] ?? '';
         $password = $_POST['password'] ?? '';
 
         $user = $this->model->getUserByUsername($username);
 
-        // ❌ sai tài khoản hoặc mật khẩu
         if (!$user || !password_verify($password, $user['password'])) {
-            \App\Core\FlashMessage::set('msg', 'Sai tài khoản hoặc mật khẩu', 'error');
+            FlashMessage::set('msg', 'Sai tài khoản hoặc mật khẩu', 'error');
             header("Location: index.php?action=login");
             exit();
         }
 
-        // ❌ tài khoản bị khóa
         if ($user['status'] != 'active') {
-            \App\Core\FlashMessage::set('msg', 'Tài khoản đã bị khóa!', 'error');
+            FlashMessage::set('msg', 'Tài khoản bị khóa!', 'error');
             header("Location: index.php?action=login");
             exit();
         }
 
-        // ✅ đăng nhập thành công
         $_SESSION['user'] = $user['username'];
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
 
         header("Location: index.php");
-        exit();
     }
-}
 
     public function logout() {
-    session_unset();
-    session_destroy();
+        session_destroy();
+        header("Location: index.php");
+    }
 
-    header("Location: index.php");
-    exit();
-}
-    
+    // ================= CHANGE PASSWORD =================
+
     public function changePassword() {
-    require_once __DIR__ . '/../../views/change_password.php';
-}
+        require_once __DIR__ . '/../../views/change_password.php';
+    }
 
     public function doChangePassword() {
 
@@ -140,48 +91,38 @@ public function register() {
 
         $userId = $_SESSION['user_id'] ?? null;
 
-        // kiểm tra login
         if (!$userId) {
             header('Location: index.php?action=login');
             exit();
         }
 
-        // 1. kiểm tra rỗng
-        if (!$old || !$new || !$confirm) {
-            FlashMessage::set('msg', 'Vui lòng nhập đầy đủ', 'error');
-            header('Location: index.php?action=change_password');
-            exit();
-        }
-
-        // 2. kiểm tra mật khẩu mới
         if ($new != $confirm) {
             FlashMessage::set('msg', 'Mật khẩu không khớp', 'error');
             header('Location: index.php?action=change_password');
             exit();
         }
 
-        // 3. kiểm tra mật khẩu cũ
         $user = $this->model->findUserById($userId);
 
-        if (!$user || !password_verify($old, $user['password'])) {
+        if (!password_verify($old, $user['password'])) {
             FlashMessage::set('msg', 'Sai mật khẩu cũ', 'error');
             header('Location: index.php?action=change_password');
             exit();
         }
 
-        // 4. cập nhật mật khẩu
         $this->model->updatePassword($userId, $new);
 
-        // logout
         session_destroy();
-
-        header('Location: index.php?action=login');
+        header("Location: index.php?action=login");
     }
-    public function showForgot() {
-    require_once __DIR__ . '/../../views/forgot.php';
-}
 
-public function forgot() {
+    // ================= FORGOT PASSWORD (EMAIL TOKEN) =================
+
+    public function showForgot() {
+        require_once __DIR__ . '/../../views/forgot.php';
+    }
+
+    public function forgot() {
 
     $username = $_POST['username'] ?? '';
     $newPass  = $_POST['new_password'] ?? '';
@@ -200,88 +141,127 @@ public function forgot() {
         exit();
     }
 
+    // ✅ đổi mật khẩu luôn
     $this->model->updatePassword($user['id'], $newPass);
 
     FlashMessage::set('msg', 'Đổi mật khẩu thành công!', 'success');
     header("Location: index.php?action=login");
 }
-public function profile() {
-    if (!isset($_SESSION['user_id'])) {
+
+    // ================= RESET PASSWORD =================
+
+    public function reset() {
+
+        $token = $_GET['token'] ?? '';
+
+        $user = $this->model->getUserByToken($token);
+
+        if (!$user || strtotime($user['reset_expire']) < time()) {
+            die("Token không hợp lệ hoặc đã hết hạn");
+        }
+
+        require_once __DIR__ . '/../../views/reset_password.php';
+    }
+
+    public function doReset() {
+
+        $token = $_POST['token'];
+        $password = $_POST['password'];
+
+        $user = $this->model->getUserByToken($token);
+
+        if (!$user) {
+            die("Token sai");
+        }
+
+        $this->model->updatePassword($user['id'], $password);
+        $this->model->clearToken($user['id']);
+
+        FlashMessage::set('msg', 'Đổi mật khẩu thành công', 'success');
         header("Location: index.php?action=login");
-        exit();
     }
 
-    $user = $this->model->findUserById($_SESSION['user_id']);
+    // ================= PROFILE =================
 
-    require_once __DIR__ . '/../../views/profile.php';
-}
+    public function profile() {
 
-public function updateProfile() {
-
-    $id = $_SESSION['user_id'];
-
-    $name = $_POST['name'];
-    $phone = $_POST['phone'];
-    $address = $_POST['address'];
-
-    // 🟢 upload ảnh
-    $avatar = null;
-
-    if (!empty($_FILES['avatar']['name'])) {
-        $avatar = time() . '_' . $_FILES['avatar']['name'];
-        move_uploaded_file($_FILES['avatar']['tmp_name'], "uploads/" . $avatar);
+        $user = $this->model->findUserById($_SESSION['user_id']);
+        require_once __DIR__ . '/../../views/profile.php';
     }
 
-    $this->model->updateProfile($id, $name, $phone, $address, $avatar);
+    public function updateProfile() {
 
-    header("Location: index.php?action=profile");
-}
-// Danh sách user
-public function listUsers() {
-    $users = $this->model->getAllUsers();
-    require_once __DIR__ . '/../../views/admin_users.php';
-}
+        $id = $_SESSION['user_id'];
 
-// Thêm user
-public function addUser() {
-    require_once __DIR__ . '/../../views/add_user.php';
-}
+        $avatar = null;
 
-// Lưu user mới
-public function saveUser() {
-    $this->model->create(
-        $_POST['name'],
-        $_POST['username'],
-        $_POST['password']
-    );
-    header("Location: index.php?action=users");
-}
+        if (!empty($_FILES['avatar']['name'])) {
+            $avatar = time() . '_' . $_FILES['avatar']['name'];
+            move_uploaded_file($_FILES['avatar']['tmp_name'], "uploads/" . $avatar);
+        }
 
-// Sửa
-public function editUser() {
-    $user = $this->model->findUserById($_GET['id']);
-    require_once __DIR__ . '/../../views/edit_user.php';
-}
+        $this->model->updateProfile(
+            $id,
+            $_POST['name'],
+            $_POST['phone'],
+            $_POST['address'],
+            $avatar
+        );
 
-// Update
-public function updateUser() {
-    $this->model->updateUser(
-        $_GET['id'],
-        $_POST['name'],
-        $_POST['role']
-    );
-    header("Location: index.php?action=users");
-}
+        header("Location: index.php?action=profile");
+    }
 
-// Xóa
-public function deleteUser() {
-    $this->model->deleteUser($_GET['id']);
-    header("Location: index.php?action=users");
-}
+    // ================= ADMIN USERS =================
 
-// Khóa / mở
-public function toggleUser() {
-    $this->model->toggleStatus($_GET['id']);
-    header("Location: index.php?action=users");
-}
+    public function listUsers() {
+        $users = $this->model->getAllUsers();
+        require_once __DIR__ . '/../../views/admin_users.php';
+    }
+
+    public function addUser() {
+        require_once __DIR__ . '/../../views/add_user.php';
+    }
+
+    public function saveUser() {
+        $this->model->create(
+            $_POST['name'],
+            $_POST['username'],
+            $_POST['password']
+        );
+        header("Location: index.php?action=users");
+    }
+
+    public function editUser() {
+        $user = $this->model->findUserById($_GET['id']);
+        require_once __DIR__ . '/../../views/edit_user.php';
+    }
+
+    public function updateUser() {
+        $this->model->updateUser(
+            $_GET['id'],
+            $_POST['name'],
+            $_POST['role']
+        );
+        header("Location: index.php?action=users");
+    }
+
+    public function deleteUser() {
+        $this->model->deleteUser($_GET['id']);
+        header("Location: index.php?action=users");
+    }
+
+    public function toggleUser() {
+        $this->model->toggleStatus($_GET['id']);
+        header("Location: index.php?action=users");
+    }
+
+    // ================= CUSTOMERS =================
+
+    public function customers() {
+
+        $customers = $this->model->getCustomers();
+        $stats = $this->model->getCustomerStats();
+
+        require_once __DIR__ . '/../../views/admin_customers.php';
+    }
 }

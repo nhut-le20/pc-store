@@ -1,4 +1,6 @@
 <?php
+use App\Core\FlashMessage;
+
 $cart = $_SESSION['cart'] ?? [];
 ?>
 
@@ -14,6 +16,13 @@ $cart = $_SESSION['cart'] ?? [];
 <body class="container mt-4">
 
 <h2>🛒 Giỏ hàng</h2>
+
+<?php FlashMessage::display(); ?>
+
+<?php if (!empty($_SESSION['last_order_id'])): ?>
+    <a href="index.php?action=customer_order_detail"
+       class="btn btn-outline-primary mb-3">Sản phẩm của bạn</a>
+<?php endif; ?>
 
 <?php if (empty($cart)): ?>
     <p>Giỏ hàng đang trống!</p>
@@ -77,9 +86,44 @@ foreach ($cart as $id => $item):
 
 </table>
 
+<?php
+    $coupon = $_SESSION['coupon'] ?? null;
+    $discount = 0;
+    if ($coupon) {
+        $discount = $coupon['discount_type'] === 'percent'
+            ? $total * ((float)$coupon['discount_value'] / 100)
+            : (float)$coupon['discount_value'];
+        $discount = min($discount, $total);
+    }
+    $finalTotal = max(0, $total - $discount);
+?>
+
 <h4 class="text-danger">
     Tổng tiền: <span id="total"><?= number_format($total) ?> VNĐ</span>
 </h4>
+
+<form method="POST" action="index.php?action=apply_coupon" class="row g-2 mb-3" style="max-width:520px;">
+    <div class="col">
+        <input type="text" name="coupon_code" class="form-control"
+               placeholder="Nhập mã giảm giá"
+               value="<?= htmlspecialchars($coupon['code'] ?? '') ?>">
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary">Áp dụng</button>
+    </div>
+    <?php if ($coupon): ?>
+        <div class="col-auto">
+            <a href="index.php?action=remove_coupon" class="btn btn-outline-danger">Xóa mã</a>
+        </div>
+    <?php endif; ?>
+</form>
+
+<?php if ($coupon): ?>
+    <p class="text-success">
+        Mã <?= htmlspecialchars($coupon['code']) ?> giảm <?= number_format($discount) ?> VNĐ.
+    </p>
+    <h4 class="text-danger">Cần thanh toán: <?= number_format($finalTotal) ?> VNĐ</h4>
+<?php endif; ?>
 
 <a href="index.php" class="btn btn-secondary">← Tiếp tục mua</a>
 <a href="index.php?action=checkout" class="btn btn-success">Thanh toán</a>

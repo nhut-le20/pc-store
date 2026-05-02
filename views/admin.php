@@ -179,7 +179,10 @@
         <a href="index.php?action=admin"><i class="fa fa-box"></i> Sản phẩm</a>
         <a href="index.php?action=add"><i class="fa fa-plus"></i> Thêm sản phẩm</a>
         <a href="index.php?action=orders">📦 Đơn hàng</a>
+        <a href="index.php?action=coupons"><i class="fa fa-tags"></i> Mã giảm giá</a>
+        <a href="index.php?action=customers"><i class="fa-solid fa-users"></i> Khách hàng</a>
         <a href="index.php"><i class="fa fa-home"></i> Trang khách</a>
+        <a href="index.php?action=posts"><i class="fa-solid fa-newspaper"></i> Bài viết</a>
         <a href="index.php?action=logout"><i class="fa fa-sign-out"></i> Đăng xuất</a>
     </div>
 
@@ -237,6 +240,68 @@
             <canvas id="revenueChart"></canvas>
         </div>
 
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow h-100">
+                <div class="card-header bg-success text-white">🏆 Sản phẩm bán chạy</div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Đã bán</th>
+                            <th>Doanh thu</th>
+                        </tr>
+                        <?php foreach (($bestSellingProducts ?? []) as $item): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($item['product_name']) ?></td>
+                                <td><?= htmlspecialchars($item['sold_quantity']) ?></td>
+                                <td><?= number_format($item['revenue']) ?>đ</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow h-100">
+                <div class="card-header bg-info text-white">📦 Tình trạng đơn hàng</div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <tr>
+                            <th>Trạng thái</th>
+                            <th>Số lượng</th>
+                        </tr>
+                        <?php foreach (($statusStatistics ?? []) as $status): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($status['status'] ?? 'pending') ?></td>
+                                <td><?= htmlspecialchars($status['total']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-secondary text-white">📅 Doanh thu 10 ngày gần nhất</div>
+        <div class="card-body p-0">
+            <table class="table mb-0">
+                <tr>
+                    <th>Ngày</th>
+                    <th>Doanh thu</th>
+                </tr>
+                <?php foreach (($dailyRevenue ?? []) as $day): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($day['day']) ?></td>
+                        <td><?= number_format($day['revenue']) ?>đ</td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
+        </div>
     </div>
 
         <a href="index.php?action=export_orders" 
@@ -319,10 +384,10 @@
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Doanh thu'],
+            labels: <?= json_encode(array_column($monthlyRevenue ?? [], 'month')) ?>,
             datasets: [{
                 label: 'VNĐ',
-                data: [<?= $totalRevenue ?>],
+                data: <?= json_encode(array_map('floatval', array_column($monthlyRevenue ?? [], 'revenue'))) ?>,
                 borderWidth: 1
             }]
         },
