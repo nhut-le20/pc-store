@@ -6,18 +6,17 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 class Mailer {
-
     public static function send($toEmail, $toName, $subject, $body) {
 
         require_once __DIR__ . '/../../config.php';
 
         $mail = new PHPMailer(true);
-
         try {
             $mail->CharSet = 'UTF-8';
 
             // 🟢 CẤU HÌNH SMTP
             $mail->isSMTP();
+            $mail->SMTPDebug = 2;   
             $mail->Host = MAIL_HOST;
             $mail->SMTPAuth = true;
             $mail->Username = MAIL_USERNAME;
@@ -43,4 +42,5 @@ class Mailer {
             return false;
         }
     }
+    
 }

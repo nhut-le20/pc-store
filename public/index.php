@@ -14,6 +14,7 @@ $action = $_GET['action'] ?? 'index';
 //  DANH SÁCH PUBLIC
 $public_actions = [
     'index',
+    'show',
     'login',
     'do_login',
     'register',
@@ -21,7 +22,7 @@ $public_actions = [
     'contact',
     'submit_contact',
     'forgot',  
-    'do_forgot'
+    'do_forgot','reset','do_reset'
 ];
 
     // 🛑 GATEKEEPER 
@@ -48,6 +49,14 @@ $public_actions = [
     'update_user',
     'delete_user',
     'toggle_user'];
+    $admin_actions = array_merge($admin_actions, [
+        'coupons',
+        'save_coupon',
+        'delete_coupon',
+        'order_detail',
+        'update_order_status',
+        'export_orders'
+    ]);
 
     if (isset($_SESSION['role']) && $_SESSION['role'] != 'admin' && in_array($action, $admin_actions)) {
         die("❌ Bạn không có quyền truy cập!");
@@ -130,6 +139,38 @@ switch ($action) {
         $controller->processCheckout();
         break;
 
+    case 'apply_coupon':
+        $controller->applyCoupon();
+        break;
+
+    case 'remove_coupon':
+        $controller->removeCoupon();
+        break;
+
+    case 'wishlist':
+        $controller->wishlist();
+        break;
+
+    case 'add_wishlist':
+        $controller->addWishlist();
+        break;
+
+    case 'remove_wishlist':
+        $controller->removeWishlist();
+        break;
+
+    case 'customer_order_detail':
+        $controller->customerOrderDetail();
+        break;
+
+    case 'cancel_customer_order':
+        $controller->cancelCustomerOrder();
+        break;
+
+    case 'save_review':
+        $controller->saveProductReview();
+        break;
+
     case 'remove_cart':
         $controller->removeCart();
         break;
@@ -170,6 +211,21 @@ switch ($action) {
     case 'export_orders':
     $controller = new ProductController();
     $controller->exportOrdersCSV();
+    break;
+
+    case 'coupons':
+    $controller = new ProductController();
+    $controller->coupons();
+    break;
+
+    case 'save_coupon':
+    $controller = new ProductController();
+    $controller->saveCoupon();
+    break;
+
+    case 'delete_coupon':
+    $controller = new ProductController();
+    $controller->deleteCoupon();
     break;
 
     case 'update_qty':
@@ -227,4 +283,40 @@ case 'toggle_user':
     case 'save_user':
     (new App\Controllers\UserController())->saveUser();
     break;
+    case 'customers':
+    (new App\Controllers\UserController())->customers();
+    break;
+    case 'posts':
+    (new App\Controllers\PostController())->index();
+    break;
+
+case 'add_post':
+    (new App\Controllers\PostController())->add();
+    break;
+
+case 'save_post':
+    (new App\Controllers\PostController())->save();
+    break;
+
+case 'delete_post':
+    (new App\Controllers\PostController())->delete();
+    break;
+    case 'forgot':
+    (new UserController())->showForgot();
+    break;
+
+case 'do_forgot':
+    (new UserController())->forgot();
+    break;
+
+case 'reset':
+    (new UserController())->showReset();
+    break;
+
+case 'do_reset':
+    (new UserController())->reset();
+    break;
+    case 'page':
+    $controller->page();
+    break;  
 }

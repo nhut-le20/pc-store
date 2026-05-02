@@ -95,7 +95,7 @@ body { margin:0; font-family:Arial; background:#f1f5f9; }
 </tr>
 <?php endforeach; ?>
 </table>
-
+  <a href="index.php?action=admin" class="btn btn-back">← Quay lại</a>
 </div>
 
 </body>
